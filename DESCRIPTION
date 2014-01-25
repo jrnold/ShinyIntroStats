@@ -1,0 +1,13 @@
+Package: pols208
+Title: POLS 208
+Description: R code and data for POLS 208
+Version: 0.0.1
+Authors@R: "Jeffrey B. Arnold <jeffrey.arnold@gmail.com> [cre, aut]"
+Depends:
+    R (>= 3.0.2)
+Imports:
+    ggplot2,
+    plyr,
+    shiny
+License: GPL-3
+LazyData: true

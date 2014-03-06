@@ -2,8 +2,9 @@
 \name{pols208}
 \alias{pols208}
 \alias{pols208-package}
-\title{pols208}
+\title{POLS208}
 \description{
-pols208
+  Code and data for POLS 208: Political Methods, Emory
+  University, Spring 2014.
 }
 

@@ -26,13 +26,13 @@ shinyUI(pageWithSidebar(
             ),
         conditionalPanel(
             condition = "input.distribution == 'beta'",
-            sliderInput("shape1", "shape1: ", min=0.1, max=10, value=1, step=0.05),
-            sliderInput("shape2", "shape2: ", min=0.1, max=10, value=1, step=0.05)
+            selectInput("shape1", "shape1: ", c(0.5, 1, 2, 3, 5)),
+            selectInput("shape2", "shape2: ", c(0.5, 1, 2, 3, 5))
             ),
         conditionalPanel(
             condition = "input.distribution == 'gamma'",
-            sliderInput("shape", "shape: ", min=0.1, max=10, value=1, step=0.05),
-            sliderInput("scale", "scale: ", min=0.1, max=10, value=1, step=0.05)
+            selectInput("shape", "shape: ", c(1, 2, 3, 5, 9)),
+            selectInput("scale", "scale: ", c(0.5, 1, 2))
             ),
         
         ## radioButtons("statistic", "Statistic:",

@@ -4,4 +4,6 @@
 #'
 #' @name pols208
 #' @docType package
+#' @import shiny
 NULL
+

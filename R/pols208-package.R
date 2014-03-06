@@ -4,4 +4,13 @@
 #'
 #' @name pols208
 #' @docType package
+#' @import shiny
 NULL
+
+run_shiny_app <- function(name, ...) {
+    runApp(system.file(file.path("inst", "shiny", name), package="pols208"), ...)
+}
+
+#' @export
+shiny_run_clt <- function(...) run_shiny_app("clt", ...)
+

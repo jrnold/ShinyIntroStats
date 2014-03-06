@@ -23,17 +23,17 @@ shinyServer(function(input, output) {
         FUN <- switch(input$distribution,
                       normal = function() rnorm(obs, input$mean, input$sd),
                       bernoulli = function() rbernoulli(obs, input$p),
-                      beta = function() rbeta(obs, input$shape1, input$shape2),
-                      gamma = function() rgamma(obs, input$shape, input$scale),
+                      beta = function() rbeta(obs, as.numeric(input$shape1), as.numeric(input$shape2)),
+                      gamma = function() rgamma(obs, as.numeric(input$shape), as.numeric(input$scale)),
                       unif = function() runif(obs))
         data.frame(x1 = raply(input$draws, statistic(FUN())))
     })
 
     output$sample_mean <- renderText({
-        paste("Sampling Dist Mean:", mean(data()$x1))
+        paste("Sampling Dist Mean:", round(mean(data()$x1), 3))
     })
     output$sample_sd <- renderText({
-        paste("Standard Error:", sd(data()$x1))
+        paste("Standard Error:", round(sd(data()$x1), 3))
     })
     output$pop_mean <- renderText({
         if (input$distribution == "normal") {
@@ -41,13 +41,13 @@ shinyServer(function(input, output) {
         } else if (input$distribution == "bernoulli") {
             mu <- input$p
         } else if (input$distribution == "beta") {
-            mu <- input$shape1 / (input$shape1 + input$shape2)
+            mu <- as.numeric(input$shape1) / (as.numeric(input$shape1) + as.numeric(input$shape2))
         } else if (input$distribution == "gamma") {
-            mu <- input$shape * input$scale
+            mu <- as.numeric(input$shape) * as.numeric(input$scale)
         } else if (input$distribution == "unif") {
             mu <- 0.5
         }
-        paste("Population Mean:", mu)
+        paste("Population Mean:", round(mu, 3))
     })
     output$pop_sd <- renderText({
         if (input$distribution == "normal") {
@@ -57,15 +57,15 @@ shinyServer(function(input, output) {
         } else if (input$distribution == "beta") {
             sigma <- sqrt(input$p * (1 - input$p))
         } else if (input$distribution == "beta") {
-            a <- input$shape1
-            b <- input$shape1
+            a <- as.numeric(input$shape1)
+            b <- as.numeric(input$shape1)
             sigma <- sqrt((a * b) / ((a + b)^2 * (a + b + 1)))
         } else if (input$distribution == "gamma") {
-            sigma <- sqrt(input$shape * input$scale^2)
+            sigma <- sqrt(as.numeric(input$shape) * as.numeric(input$scale)^2)
         } else if (input$distribution == "unif") {
             sigma <- sqrt(1/12)
         }
-        paste("Population Std. Dev.:", sigma)
+        paste("Population Std. Dev.:", round(sigma, 3))
     })
 
     

@@ -26,8 +26,8 @@ shinyUI(pageWithSidebar(
             ),
         conditionalPanel(
             condition = "input.distribution == 'beta'",
-            selectInput("shape1", "shape1: ", c(0.5, 1, 2, 5)),
-            selectInput("shape2", "shape2: ", c(0.5, 1, 2, 5))
+            selectInput("shape1", "shape1: ", c(0.5, 1, 2, 3, 5)),
+            selectInput("shape2", "shape2: ", c(0.5, 1, 2, 3, 5))
             ),
         conditionalPanel(
             condition = "input.distribution == 'gamma'",

@@ -13,4 +13,3 @@ run_shiny_app <- function(name, ...) {
 
 #' @export
 shiny_run_clt <- function(...) run_shiny_app("clt", ...)
-

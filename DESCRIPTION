@@ -11,3 +11,5 @@ Imports:
     shiny
 License: GPL-3
 LazyData: true
+Collate:
+    'pols208-package.R'

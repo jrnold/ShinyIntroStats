@@ -59,13 +59,7 @@ shinyUI(pageWithSidebar(
 
         checkboxInput("density", "Density", FALSE),
 
-        conditionalPanel(
-            condition = "input.density == true",
-            selectInput("densityMethod", "Method",
-                        list( "Normal"="gaussian", 
-                             "Epanechnikov" = "epanechnikov", 
-                             "Rectangular" = "rectangular", 
-                             "Triangular" = "triangular"))),
+        conditionalPanel(condition = "input.density == true"),
 
         checkboxInput("plotdefault", "Show plot settings", FALSE),
 

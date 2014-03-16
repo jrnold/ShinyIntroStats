@@ -87,7 +87,7 @@ shinyServer(function(input, output) {
         # Kernel denity layer
         
         if (input$density==TRUE) {
-            p <- p + geom_density(col="red", kernel=input$densityMethod)
+            p <- p + geom_density(col="red")
         }
         
         # Printing the plot (needed for ggplot2 object)

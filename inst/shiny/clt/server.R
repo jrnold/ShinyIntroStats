@@ -24,7 +24,7 @@ shinyServer(function(input, output) {
                       normal = function() rnorm(obs, input$mean, input$sd),
                       bernoulli = function() rbernoulli(obs, input$p),
                       beta = function() rbeta(obs, as.numeric(input$shape1), as.numeric(input$shape2)),
-                      gamma = function() rgamma(obs, as.numeric(input$shape), as.numeric(input$scale)),
+                      gamma = function() rgamma(obs, as.numeric(input$shape), scale = as.numeric(input$scale)),
                       unif = function() runif(obs))
         data.frame(x1 = raply(input$draws, statistic(FUN())))
     })
@@ -57,11 +57,11 @@ shinyServer(function(input, output) {
         } else if (input$distribution == "beta") {
             sigma <- sqrt(input$p * (1 - input$p))
         } else if (input$distribution == "beta") {
-            a <- as.numeric(shape1)
-            b <- as.numeric(shape1)
+            a <- as.numeric(input$shape1)
+            b <- as.numeric(input$shape2)
             sigma <- sqrt((a * b) / ((a + b)^2 * (a + b + 1)))
         } else if (input$distribution == "gamma") {
-            sigma <- sqrt(as.numeric(shape) * as.numeric(scale)^2)
+            sigma <- sqrt(as.numeric(input$shape) * as.numeric(input$scale)^2)
         } else if (input$distribution == "unif") {
             sigma <- sqrt(1/12)
         }

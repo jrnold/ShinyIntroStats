@@ -12,6 +12,8 @@ shinyServer(function(input, output) {
                           mapping = aes(x = x, y = y), colour = "blue")
               + geom_line(data = data.frame(x = x, y = t_dens),
                           mapping = aes(x = x, y = y), colour = "red")
-              + ggtitle(sprintf("Student t-distribution (df = %d)", input$df)))
+              + scale_x_continuous("x")
+              + scale_y_continuous("p(x)")
+              + ggtitle(sprintf("degrees of freedom = %d", input$df)))
     })
 })

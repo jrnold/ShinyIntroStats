@@ -10,9 +10,10 @@ NULL
 .shiny_apps <-
     c(clt = "Central Limit Theorem",
       tdist = "t-distribution",
-      ci = "Confidence intervals"
+      confint = "Confidence interval coverage",
+      mean_confint = "Confidence intervals (mean)",
+      prop_confint = "Confidence intervals (proportion)"
       )
-
 
 choose_shiny_app <- function() {
     prompt <- paste0("Enter the number of the app to run:\n",
@@ -42,3 +43,9 @@ shiny_run_tdist <- function(...) run_shiny_app("tdist", ...)
 
 #' @export
 shiny_run_confint <- function(...) run_shiny_app("confint", ...)
+
+#' @export
+shiny_run_prop_confint <- function(...) run_shiny_app("prop_confint", ...)
+
+#' @export
+shiny_run_mean_confint <- function(...) run_shiny_app("mean_confint", ...)

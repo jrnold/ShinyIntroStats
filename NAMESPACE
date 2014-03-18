@@ -1,4 +1,6 @@
 export(shiny_run_clt)
 export(shiny_run_confint)
+export(shiny_run_mean_confint)
+export(shiny_run_prop_confint)
 export(shiny_run_tdist)
 import(shiny)

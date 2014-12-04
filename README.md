@@ -1,3 +1,1 @@
-# POLS 208
-
-Code and data for POLS208: Political Methods, Emory University, Spring 2014.
+Some [Shiny](http://shiny.rstudio.com/) apps appropriate for intro stats courses.

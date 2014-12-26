@@ -1,3 +1,6 @@
+library("shiny")
+library("ggvis")
+
 shinyUI(fluidPage(
   tabsetPanel(
     tabPanel("Data", dataTableOutput("table")),

@@ -1,13 +1,16 @@
-Package: pols208
-Title: POLS 208
-Description: R code and data for POLS 208
-Version: 0.0.1
-Authors@R: "Jeffrey B. Arnold <jeffrey.arnold@gmail.com> [cre, aut]"
+Package: ShinyIntroStats
+Title: ShinyApps for Intro Stats
+Description: Some Shiny apps that are useful when teaching
+ introductory statistics.
+Version: 1.0.0
+Authors: "Jeffrey B. Arnold <jeffrey.arnold@gmail.com> [cre, aut]"
 Depends:
-    R (>= 3.0.2)
+    R (>= 3.1.2)
 Imports:
     ggplot2,
     plyr,
     shiny
+Suggests:
+    ggvis
 License: GPL-3
 LazyData: true

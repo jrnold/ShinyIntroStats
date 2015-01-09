@@ -1,5 +1,4 @@
 library("shiny")
-library("ggvis")
 
 shinyUI(fluidPage(
   titlePanel("Mean and Median"),
@@ -7,7 +6,7 @@ shinyUI(fluidPage(
     sidebarPanel(numericInput("newval", "Add value:", 0, step = 1),
                      actionButton("update", "Update"),
                      actionButton("clear", "Clear Values")),
-    mainPanel(ggvisOutput("plot"),
+    mainPanel(plotOutput("plot"),
               textOutput("mean"),
               textOutput("median"),
               textOutput("values")

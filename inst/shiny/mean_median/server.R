@@ -1,5 +1,5 @@
 library("shiny")
-library("ggvis")
+library("ggplot2")
 
 formatValues <- function(x) {
   if (is.na(x) || is.nan(x)) ""
@@ -22,12 +22,13 @@ shinyServer(function(input, output) {
     }
   })
 
-  reactive({data_frame(x = values$x) %>%
-             ggvis(~ x, singular()) %>%
-             layer_points() %>%
-             layer_points(x = mean(values$x), y = singular(), fill := "orange") %>%
-             layer_points(x = median(values$x), y = singular(), fill := "purple")
-  }) %>% bind_shiny("plot")
+  output$plot <-
+    (ggplot(values(), aes(x = x))
+       + geom_dotplot()
+       + geom_vline(xintercept = mean(values$x), colour = "purple")
+       + geom_vline(xintercept = median(values$x), colour = "orange")
+       + theme(axis.line = element_blank())
+    )
 
   output$median <- renderText(paste("Median:", formatValues(median(values$x))))
   output$mean <- renderText(paste("Mean:", formatValues(mean(values$x))))

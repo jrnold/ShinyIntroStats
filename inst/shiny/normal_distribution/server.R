@@ -1,4 +1,4 @@
-library("shiny")
+library("ggplot2")
 
 shinyServer(function(input, output) {
   output$plot <-
@@ -12,11 +12,11 @@ shinyServer(function(input, output) {
           dd <- data.frame(x = rep(x, 2),
                            y = c(y1, y2),
                            distribution = factor(rep(c(1L, 2L), each = n)))
-          breaks <- input$mean1 + -6:6 * input$sd1
+          breaks <- input$mean1 + -6:6 * input$sd2
           (ggplot(dd, aes(x = x, y = y, color = distribution))
            + geom_line()
            + scale_y_continuous("p(x)")
-           + scale_x_continuous("x", breaks = breaks))
+           + scale_x_continuous("x", breaks = breaks, limits = range(breaks)))
       })
 })
 

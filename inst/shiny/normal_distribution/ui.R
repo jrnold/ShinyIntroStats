@@ -1,5 +1,3 @@
-library("shiny")
-
 shinyUI(fluidPage(
   titlePanel("Comparing Normal Distributions"),
   sidebarLayout(
@@ -9,6 +7,7 @@ shinyUI(fluidPage(
                               value = 0, step = 0.01),
                  numericInput("sd1", label = "Std. Dev.",
                               value = 1, step = 0.01, min = 0),
+                 br(),
                  strong("Distribution 2"),
                  numericInput("mean2", label = "Mean",
                               value = 0, step = 0.01),

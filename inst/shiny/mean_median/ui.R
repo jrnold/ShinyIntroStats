@@ -1,3 +1,4 @@
+library("stringr")
 shinyUI(fluidPage(
   titlePanel("Mean and Median"),
   sidebarLayout(

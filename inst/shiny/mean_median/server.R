@@ -28,7 +28,7 @@ shinyServer(function(input, output) {
       binwidth = 1
       (ggplot(data.frame(x = x()),
              aes(x = x))
-       + geom_dotplot(binwidth = binwidth)
+       + geom_dotplot(binwidth = input$binwidth)
        + geom_vline(xintercept = xmean(), colour = "purple")
        + geom_vline(xintercept = xmedian(), colour = "orange")
        + scale_y_continuous(limits = c(0, 1))

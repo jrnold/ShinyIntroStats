@@ -44,7 +44,7 @@ shinyServer(function(input, output) {
     x0 <- c("Quantile", "\\(z\\)-score", "Probability")
     x1 <- c("$$x$$",
             "$$z = \\frac{(x - \\mu)}{\\sigma}$$",
-            if (input$lower.tail) "$$P(X \\leq x)$$" else "$$P(X \\geq x)$$")
+            if (input$lower.tail) "$$P(X \\leq x)$$" else "$$P(X > x)$$")
     x2 <- c(prettyNum(q(), digits = 3, format = "f"),
             prettyNum((q() - input$mean) / input$sd,
                       digits = 3, format = "f"),

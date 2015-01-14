@@ -13,8 +13,8 @@ shinyServer(function(input, output) {
                            y = c(y1, y2),
                            distribution = factor(rep(c(1L, 2L), each = n)))
           breaks <- input$mean1 + -6:6 * input$sd2
-          (ggplot(dd, aes(x = x, y = y, color = distribution))
-           + geom_line()
+          (ggplot(dd, aes(x = x, ymax = y, ymin = 0, fill = distribution))
+           + geom_ribbon(alpha = 0.5)
            + scale_y_continuous("p(x)")
            + scale_x_continuous("x", breaks = breaks, limits = range(breaks)))
       })

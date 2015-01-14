@@ -1,6 +1,5 @@
-library("dplyr")
+library("ggplot2")
 library("xtable")
-library("shiny")
 
 normal_prob_area_plot <- function(q, mean = 0, sd = 1, lower.tail = TRUE, n = 1000) {
   max.sd <- 4

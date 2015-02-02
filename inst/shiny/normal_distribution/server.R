@@ -5,7 +5,7 @@ shinyServer(function(input, output) {
       renderPlot({
           n <- 1000
           x <- seq(input$mean1 - 6 * input$sd2,
-                   input$mean1 + 6 * input$sd2,
+                   input$mean2 + 6 * input$sd2,
                    length.out = n)
           y1 <- dnorm(x, input$mean1, input$sd1)
           y2 <- dnorm(x, input$mean2, input$sd2)

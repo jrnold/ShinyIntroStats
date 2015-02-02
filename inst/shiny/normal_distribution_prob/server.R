@@ -14,7 +14,9 @@ normal_prob_area_plot <- function(q, mean = 0, sd = 1, lower.tail = TRUE, n = 10
   }
   areax <- seq(xmin, xmax, length.out = n)
   area <- data.frame(x = areax, ymin = 0, ymax = dnorm(areax, mean = mean, sd = sd))
-  breaks <- -max.sd:max.sd * sd
+  breaks <- seq(mean - max.sd * sd,
+                mean + max.sd * sd,
+                by = sd)
 
   (ggplot()
    + geom_line(data.frame(x = x, y = dnorm(x, mean = mean, sd = sd)),

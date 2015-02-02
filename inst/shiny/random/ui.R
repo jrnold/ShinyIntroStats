@@ -2,7 +2,7 @@ library("shiny")
 shinyUI(fluidPage(
   h1("Draw a Simple Random Sample"),
   sidebarPanel(
-    submitButton(text = "Draw sample"),
+    actionButton("submit", "Draw a new sample"),
     numericInput("n", "Number of Samples", 1),
     numericInput("min", "Minimum Number", 1),
     numericInput("max", "Maximum Number", 100),

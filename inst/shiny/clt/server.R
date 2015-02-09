@@ -1,7 +1,8 @@
 library("dplyr")
 library("ggplot2")
 library("stringr")
-
+#library("parallel")
+#library("ggvis")
 
 shinyServer(function(input, output) {
 
@@ -96,7 +97,9 @@ shinyServer(function(input, output) {
   sampledist <- reactive({
     input$action
     samples <- 2^12
-    f <- function(i) mean(rfunc()(sample_size()))
+    sampler <- rfunc()
+    n <- sample_size()
+    f <- function(i) mean(sampler(n))
     sapply(seq_len(samples), f)
   })
 
@@ -125,19 +128,6 @@ shinyServer(function(input, output) {
     x
   })
 
-#   output$sample_mean <- renderText({
-#     sample_mean()
-#   })
-#   output$sample_sd <- renderText({
-#     sample_sd()
-#   })
-#   output$pop_mean <- renderText({
-#     mu()
-#   })
-#   output$pop_sd <- renderText({
-#     sigma()
-#   })
-
   ## Plot
   output$plot <- renderPlot({
 
@@ -158,15 +148,23 @@ shinyServer(function(input, output) {
           + ggtitle(paste("n =", 2^input$obs))
           + xlab("Sample Means")
           + coord_cartesian(xlim=xlimits())
-          + geom_histogram(binwidth = binwidth)
+          + geom_histogram(binwidth = binwidth, fill = "gray")
           + theme_minimal()
     )
     if (input$draw_normal) {
       normdata <- data_frame(x = seq(xlimits()[1], xlimits()[2], length.out = 2^10),
                              y = dnorm(x, mean = sample_mean(), sd = sample_sd()))
       p <- p + geom_line(data = normdata, mapping = aes(x = x, y = y),
-                         colour = "red")
+                         colour = "black")
     }
     p
   })
+
+#   reactive({
+#     data_frame(x = sampledist()) %>%
+#       ggvis(~ x) %>%
+#       layer_histograms() %>%
+#       bind_shiny("ggvis", "ggvis_ui")
+#   })
+
 })

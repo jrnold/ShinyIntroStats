@@ -7,7 +7,8 @@ shinyUI(
         strong("Sample Size"),
         helpText("See what happens as the sample size increases"),
         sliderInput("obs", "", 0, 13, 0, step = 1,
-                    animate=animationOptions(interval = 1000, loop = FALSE)),
+                    animate=animationOptions(interval = 2^11, loop = FALSE),
+                    format = "2^#0"),
         helpText("How does the sampling distribution compare to a normal distribution?"),
         checkboxInput("draw_normal", "Draw Normal Distribution?", value = FALSE),
         strong("Distribution"),
@@ -27,7 +28,7 @@ shinyUI(
         conditionalPanel(
           condition = "input.distr == 'bernoulli'",
           numericInput("bernoulli_prob", "0 < p < 1", 0.5,
-                       min = 0, max =1, step = 0.1)
+                       min = 0, max =1, step = 0.01)
         ),
         conditionalPanel(
           condition = "input.distr == 'beta'",
@@ -58,6 +59,7 @@ shinyUI(
       mainPanel(
         tableOutput("table"),
         plotOutput("plot")
+        #ggvisOutput("ggvis")
       )
     )
   )

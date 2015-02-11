@@ -21,8 +21,8 @@ shinyUI(
       mainPanel(
         plotOutput("plot"),
         textOutput("npct"),
-        p("Blue line is the population mean \\(\\mu\\). Gray intervals
-          contain \\(\\mu\\); black intervals contain\\(\\mu\\)."),
+        p("Blue line is the population mean \\(\\mu\\). ",
+          "Black intervals do not contain\\(\\mu\\)."),
         withMathJax()
       )
     )

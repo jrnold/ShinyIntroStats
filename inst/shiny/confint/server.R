@@ -34,7 +34,7 @@ shinyServer(function(input, output) {
         x <- draw_ci(input$samples, input$n, input$confidence / 100,
                      input$mu, input$sigma)
         if (input$sorted) {
-          arrange(x, mean) %>% mutate(i = seq_along(lb))
+          arrange(x, mean) %>% mutate(i = seq_along(mean))
         } else x
       })
     })

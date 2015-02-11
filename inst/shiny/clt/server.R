@@ -160,11 +160,11 @@ shinyServer(function(input, output) {
     p
   })
 
-#   reactive({
-#     data_frame(x = sampledist()) %>%
-#       ggvis(~ x) %>%
-#       layer_histograms() %>%
-#       bind_shiny("ggvis", "ggvis_ui")
-#   })
+  reactive({
+    data_frame(x = sampledist()) %>%
+      ggvis(~ x) %>%
+      layer_histograms() %>%
+      bind_shiny("ggvis", "ggvis_ui")
+  })
 
 })

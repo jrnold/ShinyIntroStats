@@ -7,7 +7,7 @@ shinyUI(
 
       sidebarPanel(
         actionButton("draw", "Draw samples"),
-        numericInput("confidence", "Confidence (%):", 95, min = 1, step=1),
+        numericInput("confidence", "Confidence (%):", 95, min = 1, max=99, step=1),
         numericInput("n", "Sample sizes:", 30, min = 1, step=1),
         numericInput("samples", "Number of confidence intervals:", 100, min = 1,
                      step=1),

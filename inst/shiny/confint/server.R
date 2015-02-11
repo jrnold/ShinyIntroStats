@@ -40,24 +40,27 @@ shinyServer(function(input, output) {
     })
 
     output$plot <- renderPlot({
-        (ggplot(sample_ci(), aes(x = i,
-                                 ymin = lb, ymax = ub,
-                                 colour = contains_mean))
-              + geom_hline(xintercept = 0, colour="blue")
-              + geom_linerange()
-              + coord_flip()
-              + scale_x_continuous("")
-              + scale_y_continuous(sprintf("%d%% CI", input$confidence))
-              + scale_colour_manual(values = c("black", "gray"))
-              + theme_minimal()
-              + theme(legend.position = "none",
-                      axis.text.y = element_blank(),
-                      axis.ticks.y = element_blank())
-        )
+       input$draw
+       isolate({
+         (ggplot(sample_ci(), aes(x = i,
+                                  ymin = lb, ymax = ub,
+                                  colour = contains_mean))
+          + geom_linerange()
+          + geom_hline(xintercept = input$mu, colour="blue")
+          + coord_flip()
+          + scale_x_continuous("")
+          + scale_y_continuous(sprintf("%d%% CI", input$confidence))
+          + scale_colour_manual(values = c("FALSE"="black", "TRUE"="gray"))
+          + theme_minimal()
+          + theme(legend.position = "none",
+                  axis.text.y = element_blank(),
+                  axis.ticks.y = element_blank())
+         )
+       })
     })
 
     output$npct <- renderText({
-        c("Percent of CI containing the population mean:",
+        c("Percent of samples with confidence intervals containing the population mean:",
           round(mean(sample_ci()$contains_mean) * 100, 2), "%")
     })
 })

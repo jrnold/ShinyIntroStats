@@ -12,21 +12,24 @@ shinyServer(function(input, output) {
     } else if (input$direction == "gt") {
       p <- pnorm(z(), lower.tail = FALSE)
     } else {
-      p <- 2 * pnorm(abs(z()))
+      p <- 2 * pnorm(-abs(z()))
     }
   })
 
   output$plot <- renderPlot({
     normal_tail_plot_q(input$xbar,
-                     mean = input$mu,
-                     sd = se(),
-                     lower.tail = (input$direction == "lt"),
-                     two.sided = (input$direction == "neq")) +
+                       mean = input$mu,
+                       sd = se(),
+                       lower.tail = (input$direction == "lt"),
+                       two.sided = (input$direction == "neq"),
+                       area_opts = list(alpha = 0.5)) +
+      #       scale_x_continuous("",
+      #                          breaks = c(input$mu, input$xbar, -input$xbar),
+      #                          labels = c(expression(mu),
+      #                                     expression(bar(x)),
+      #                                     expression(-bar(x)))) +
       scale_x_continuous("",
-                         breaks = c(input$mu, input$xbar, -input$xbar),
-                         labels = c(expression(mu),
-                                    expression(bar(x)),
-                                    expression(-bar(x)))) +
+                         breaks = unique(c(input$mu, input$xbar, -input$xbar))) +
       theme_minimal()
   })
 

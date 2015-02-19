@@ -17,9 +17,9 @@ shinyServer(function(input, output) {
   })
 
   output$plot <- renderPlot({
-    normal_tail_plot_q(input$xbar,
-                       mean = input$mu,
-                       sd = se(),
+    normal_tail_plot_q(z(),
+                       mean = 0,
+                       sd = 1,
                        lower.tail = (input$direction == "lt"),
                        two.sided = (input$direction == "neq"),
                        area_opts = list(alpha = 0.5)) +
@@ -29,7 +29,7 @@ shinyServer(function(input, output) {
       #                                     expression(bar(x)),
       #                                     expression(-bar(x)))) +
       scale_x_continuous("",
-                         breaks = unique(c(input$mu, input$xbar, -input$xbar))) +
+                         breaks = unique(c(input$mu, z(), -z()))) +
       theme_minimal()
   })
 

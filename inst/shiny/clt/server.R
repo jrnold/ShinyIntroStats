@@ -1,96 +1,170 @@
-## Copyright: Martin Berlin, Jeffrey Arnold <jeffrey.arnold@gmail.com> (2013)
-##
-## Adapted from original code by Martin Berlin <mno.berlin@gmail.com> http://spark.rstudio.com/berlin/stat/
-
-library(shiny)
-library(plyr)
-library(ggplot2)
-
-## Generate data
-
-rbernoulli <- function(n, p) {
-    sample(0:1, n, replace = TRUE, prob = c(1 - p, p))
-}
+library("dplyr")
+library("ggplot2")
+library("stringr")
+#library("parallel")
+#library("ggvis")
 
 shinyServer(function(input, output) {
 
-    data <- reactive({
-        statistic <- mean
-        ## statistic <- switch(input$statistic,
-        ##                     mean = mean,
-        ##                     median = median)
-        obs <- 2^input$obs
-        FUN <- switch(input$distribution,
-                      normal = function() rnorm(obs, input$mean, input$sd),
-                      bernoulli = function() rbernoulli(obs, input$p),
-                      beta = function() rbeta(obs, as.numeric(input$shape1), as.numeric(input$shape2)),
-                      gamma = function() rgamma(obs, as.numeric(input$shape), scale = as.numeric(input$scale)),
-                      unif = function() runif(obs))
-        data.frame(x1 = raply(input$draws, statistic(FUN())))
-    })
+  pfunc <- reactive({
+    if (input$distr == "norm") {
+      function(q) pnorm(q, mean = input$norm_mean, sd = input$norm_sd)
+    } else if (input$distr == "bernoulli") {
+      function(q) pbinom(q, 1, prob = input$bernoulli_prob)
+    } else if (input$distr == "beta") {
+      function(q) pbeta(q, input$beta_shape1, input$beta_shape2)
+    } else if (input$distr == "exp") {
+      function(q) pexp(q, input$exp_rate)
+    } else if (input$distr == "gamma") {
+      function(q) pgamma(q, input$gamma_shape, input$gamma_scale)
+    } else if (input$distr == "unif") {
+      function(q) punif(q, input$unif_min, input$unif_max)
+    }
+  })
 
-    output$sample_mean <- renderText({
-        paste("Sampling Dist Mean:", round(mean(data()$x1), 3))
-    })
-    output$sample_sd <- renderText({
-        paste("Standard Error:", round(sd(data()$x1), 3))
-    })
-    output$pop_mean <- renderText({
-        if (input$distribution == "normal") {
-            mu <- input$mean
-        } else if (input$distribution == "bernoulli") {
-            mu <- input$p
-        } else if (input$distribution == "beta") {
-            mu <- as.numeric(input$shape1) / (as.numeric(input$shape1) + as.numeric(input$shape2))
-        } else if (input$distribution == "gamma") {
-            mu <- as.numeric(input$shape) * as.numeric(input$scale)
-        } else if (input$distribution == "unif") {
-            mu <- 0.5
-        }
-        paste("Population Mean:", round(mu, 3))
-    })
-    output$pop_sd <- renderText({
-        if (input$distribution == "normal") {
-            sigma <- input$sd
-        } else if (input$distribution == "bernoulli") {
-            sigma <- sqrt(input$p * (1 - input$p))
-        } else if (input$distribution == "beta") {
-            sigma <- sqrt(input$p * (1 - input$p))
-        } else if (input$distribution == "beta") {
-            a <- as.numeric(input$shape1)
-            b <- as.numeric(input$shape2)
-            sigma <- sqrt((a * b) / ((a + b)^2 * (a + b + 1)))
-        } else if (input$distribution == "gamma") {
-            sigma <- sqrt(as.numeric(input$shape) * as.numeric(input$scale)^2)
-        } else if (input$distribution == "unif") {
-            sigma <- sqrt(1/12)
-        }
-        paste("Population Std. Dev.:", round(sigma, 3))
-    })
+  qfunc <- reactive({
+    if (input$distr == "norm") {
+      function(p) qnorm(p, mean = input$norm_mean, sd = input$norm_sd)
+    } else if (input$distr == "bernoulli") {
+      function(p) qbinom(p, 1, prob = input$bernoulli_prob)
+    } else if (input$distr == "beta") {
+      function(p) qbeta(p, input$beta_shape1, input$beta_shape2)
+    } else if (input$distr == "exp") {
+      function(p) qexp(p, input$exp_rate)
+    } else if (input$distr == "gamma") {
+      function(p) qgamma(p, input$gamma_shape, input$gamma_scale)
+    } else if (input$distr == "unif") {
+      function(p) qunif(p, input$unif_min, input$unif_max)
+    }
+  })
 
-    
-    ## Plot
-    output$simPlot <- renderPlot({
+  rfunc <- reactive({
+    if (input$distr == "norm") {
+      function(n) rnorm(n, mean = input$norm_mean, sd = input$norm_sd)
+    } else if (input$distr == "bernoulli") {
+      function(n) rbinom(n, 1, prob = input$bernoulli_prob)
+    } else if (input$distr == "beta") {
+      function(n) rbeta(n, input$beta_shape1, input$beta_shape2)
+    } else if (input$distr == "exp") {
+      function(n) rexp(n, input$exp_rate)
+    } else if (input$distr == "gamma") {
+      function(n) rgamma(n, input$gamma_shape, input$gamma_scale)
+    } else if (input$distr == "unif") {
+      function(n) runif(n, input$unif_min, input$unif_max)
+    }
+  })
 
-        p  <- (ggplot(data=data(), aes(x=x1, y=..density..))
-               + ggtitle(paste("n =", 2^input$obs))
-               #+ xlab(input$statistic)
-               + xlab("Mean")
-               + coord_cartesian(xlim=input$xlim, ylim=input$ylim))
-        
-        # Histogram layer
-        
-        if (input$histogram==TRUE) {
-            p <- p + geom_histogram(binwidth=input$bw)
-        }
-        
-        # Kernel denity layer
-        
-        if (input$density==TRUE) {
-            p <- p + geom_density(col="red")
-        }
-        
-        # Printing the plot (needed for ggplot2 object)
-        print(p)
-    })
+  mu <- reactive({
+    if (input$distr == "norm") {
+      mu <- input$norm_mean
+    } else if (input$distr == "bernoulli") {
+      mu <- input$bernoulli_prob
+    } else if (input$distr == "beta") {
+      a <- input$beta_shape1
+      b <- input$beta_shape2
+      mu <- a / (a + b)
+    } else if (input$distr == "exp") {
+      mu <- 1 / as.numeric(input$exp_rate)
+    } else if (input$distr == "gamma") {
+      mu <- as.numeric(input$gamma_shape) * as.numeric(input$gamma_scale)
+    } else if (input$distr == "unif") {
+      mu <- 0.5 * (input$unif_max - input$unif_min)
+    }
+    mu
+  })
+
+  sigma <- reactive({
+    if (input$distr == "norm") {
+      sigma <- input$norm_sd
+    } else if (input$distr == "bernoulli") {
+      sigma <- sqrt(input$bernoulli_prob * (1 - input$bernoulli_prob))
+    } else if (input$distr == "beta") {
+      a <- as.numeric(input$shape1)
+      b <- as.numeric(input$shape2)
+      sigma <- sqrt((a * b) / ((a + b)^2 * (a + b + 1)))
+    } else if (input$distr == "exp") {
+      sigma <- 1 / as.numeric(input$exp_rate)
+    } else if (input$distr == "gamma") {
+      sigma <- sqrt(as.numeric(input$gamma_shape) * as.numeric(input$gamma_scale)^2)
+    } else if (input$distr == "unif") {
+      sigma <- sqrt(1/12 * (input$unif_max - input$unif_min) ^ 2)
+    }
+    sigma
+  })
+
+  sample_size <- reactive({2 ^ input$obs})
+
+  sampledist <- reactive({
+    input$action
+    samples <- 2^12
+    sampler <- rfunc()
+    n <- sample_size()
+    f <- function(i) mean(sampler(n))
+    sapply(seq_len(samples), f)
+  })
+
+  sample_mean <- reactive(mean(sampledist()))
+
+  sample_sd <- reactive(sd(sampledist()))
+
+  # For plot limits use the 1st and 99th percentiles of the population
+  xlimits <- reactive({
+    if (input$distr %in% c("beta")) {
+      c(0, 1)
+    } else if (input$distr %in% c("bernoulli")) {
+      c(0, 1.1)
+    } else if (input$distr %in% c("exp", "gamma")) {
+      c(0, qfunc()(0.99))
+    } else {
+      c(qfunc()(0.01), qfunc()(0.99))
+    }
+  })
+
+  output$table <- renderTable({
+    x <-  data.frame(pop = c(mu(), sigma()),
+                     sampling = c(sample_mean(), c(sample_sd())))
+    rownames(x) <- c("Mean", "Std. Dev.")
+    colnames(x) <- c("Population", "Sampling Dist.")
+    x
+  })
+
+  ## Plot
+  output$plot <- renderPlot({
+
+    x <- sampledist()
+    n <- length(x)
+    r <- diff(range(x))
+    binwidth <- r / (log2(n) + 1)
+
+    #     # Printing the plot (needed for ggplot2 object)
+    #     print(p)
+    #     data_frame(x = x) %>%
+    #         ggvis(~ x) %>%
+    #         layer_histograms() %>%
+    #         bind_shiny("ggvis", "ggvis_ui")
+
+    p <- (ggplot(data=data_frame(x = sampledist()),
+                 aes(x = x, y= ..density.. ))
+          + ggtitle(paste("n =", 2^input$obs))
+          + xlab("Sample Means")
+          + coord_cartesian(xlim=xlimits())
+          + geom_histogram(binwidth = binwidth, fill = "gray")
+          + theme_minimal()
+    )
+    if (input$draw_normal) {
+      normdata <- data_frame(x = seq(xlimits()[1], xlimits()[2], length.out = 2^10),
+                             y = dnorm(x, mean = sample_mean(), sd = sample_sd()))
+      p <- p + geom_line(data = normdata, mapping = aes(x = x, y = y),
+                         colour = "black")
+    }
+    p
+  })
+
+  reactive({
+    data_frame(x = sampledist()) %>%
+      ggvis(~ x) %>%
+      layer_histograms() %>%
+      bind_shiny("ggvis", "ggvis_ui")
+  })
+
 })

@@ -1,21 +1,30 @@
-library("shiny")
- 
-shinyUI(pageWithSidebar(
-    headerPanel("Confidence Intervals"),
+shinyUI(
+  fluidPage(
+    titlePanel("Confidence Intervals of the Sample Mean"),
 
-    sidebarPanel(
+    #withMathJax(),
+    sidebarLayout(
+
+      sidebarPanel(
         actionButton("draw", "Draw samples"),
-        numericInput("confidence", "Confidence (%):", 95, min = 1, max = 99,
+        numericInput("confidence", "Confidence (%):", 95, min = 1, max=99, step=1),
+        numericInput("n", "Sample sizes:", 30, min = 1, step=1),
+        numericInput("samples", "Number of confidence intervals:", 100, min = 1,
                      step=1),
-        numericInput("smplsize", "Sample sizes:", 100, min = 2, max = 1000,
-                     step=1),
-        numericInput("nsamples", "Number of confidence intervals:", 100, min = 1, max = 500,
-                     step=1)
-        ),
+        checkboxInput("sorted", "Sort confidence intervals by \\(\\bar{x}\\)",
+                      FALSE),
+        numericInput("mu", "mean (\\(\\mu\\))", 0),
+        numericInput("sigma", "standard deviation (\\(\\sigma\\))", 1,
+                     min = 0)
+      ),
 
-    mainPanel(
-        textOutput("npct"),
+      mainPanel(
         plotOutput("plot"),
-        p("The population has a mean of 0 and a standard deviation of 1.",
-          "Intervals including the population mean are colored red, those not including the population mean are colored black")
-    )))
+        textOutput("npct"),
+        p("Blue line is the population mean \\(\\mu\\). ",
+          "Black intervals do not contain\\(\\mu\\)."),
+        withMathJax()
+      )
+    )
+  )
+)

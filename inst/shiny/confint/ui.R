@@ -13,6 +13,7 @@ shinyUI(
                      step=1),
         checkboxInput("sorted", "Sort confidence intervals by \\(\\bar{x}\\)",
                       FALSE),
+        helpText("Population distributed normal with the following mean and standard deviation."),
         numericInput("mu", "mean (\\(\\mu\\))", 0),
         numericInput("sigma", "standard deviation (\\(\\sigma\\))", 1,
                      min = 0),
@@ -31,6 +32,7 @@ shinyUI(
         textOutput("npct"),
         p("Blue line is the population mean \\(\\mu\\). ",
           "Black intervals do not contain\\(\\mu\\)."),
+        uiOutput("eqn"),
         withMathJax()
       )
     )

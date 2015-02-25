@@ -73,6 +73,18 @@ shinyServer(function(input, output) {
        })
     })
 
+    output$eqn <- renderText({
+      input$draw
+      isolate({
+        tailprob <- (1 - conf_level) / 2
+        if (use_normal) {
+          q <- - qnorm(tailprob, lower.tail=TRUE)
+        } else {
+          q <- - qt(tailprob, df=(n - 1), lower.tail=TRUE)
+        }
+      })
+    })
+
     output$npct <- renderText({
         c("Percent of samples with confidence intervals containing the population mean:",
           round(mean(sample_ci()$contains_mean) * 100, 2), "%")

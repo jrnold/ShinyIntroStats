@@ -1,5 +1,7 @@
 library("stringr")
+library("ggplot2")
 source("utils.R")
+
 shinyServer(function(input, output) {
   se <- reactive((input$sigma / sqrt(input$n)))
   z <- reactive({
@@ -7,29 +9,42 @@ shinyServer(function(input, output) {
   })
 
   pval <- reactive({
-    if (input$direction == "lt") {
-      p <- pnorm(z())
-    } else if (input$direction == "gt") {
-      p <- pnorm(z(), lower.tail = FALSE)
+    if (input$use_normal) {
+      if (input$direction == "lt") {
+        p <- pnorm(z())
+      } else if (input$direction == "gt") {
+        p <- pnorm(z(), lower.tail = FALSE)
+      } else {
+        p <- 2 * pnorm(-abs(z()))
+      }
     } else {
-      p <- 2 * pnorm(-abs(z()))
+      if (input$direction == "lt") {
+        p <- pt(z(), input$n - 1)
+      } else if (input$direction == "gt") {
+        p <- pt(z(), input$n - 1, lower.tail = FALSE)
+      } else {
+        p <- 2 * pt(-abs(z()), input$n - 1)
+      }
     }
+
   })
 
   output$plot <- renderPlot({
-    normal_tail_plot_q(input$xbar,
-                       mean = input$mu,
-                       sd = se(),
-                       lower.tail = (input$direction == "lt"),
-                       two.sided = (input$direction == "neq"),
-                       area_opts = list(alpha = 0.5)) +
-      #       scale_x_continuous("",
-      #                          breaks = c(input$mu, input$xbar, -input$xbar),
-      #                          labels = c(expression(mu),
-      #                                     expression(bar(x)),
-      #                                     expression(-bar(x)))) +
-      scale_x_continuous("",
-                         breaks = unique(c(input$mu, input$xbar, -input$xbar))) +
+    if (input$use_normal) {
+      plt <- normal_tail_plot_q(z(),
+                                lower.tail = (input$direction == "lt"),
+                                two.sided = (input$direction == "neq"),
+                                area_opts = list(alpha = 0.5))
+    } else {
+      plt <- students_t_tail_plot_q(z(),
+                                    df = input$n - 1,
+                                    lower.tail = (input$direction == "lt"),
+                                    two.sided = (input$direction == "neq"),
+                                    area_opts = list(alpha = 0.5))
+    }
+    plt +
+      scale_x_continuous(expression((bar(x) - mu[0]) / (s / sqrt(n))),
+                         breaks = unique(c(0, -z(), z()))) +
       theme_minimal()
   })
 
@@ -48,8 +63,10 @@ shinyServer(function(input, output) {
     sprintf("p-value: %4g", round(pval(), 4))
   })
 
-  output$z <- renderText({
-    sprintf("test statistic: %g", z())
+  output$z <- renderUI({
+    withMathJax(sprintf("test statistic (\\(%s\\)): %g",
+                        if (input$use_normal) "z" else "t",
+                        z()))
   })
 
 

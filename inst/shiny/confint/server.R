@@ -5,13 +5,23 @@ norm_mean <- 0
 norm_sd <- 1
 
 ##' Take sample from normal dist and calculate confidence interval for normal
-draw_ci_ <- function(n, conf_level = 0.95, mu=0, sigma=1) {
+draw_ci_ <- function(n, conf_level = 0.95, mu=0, sigma=1,
+                     use_normal = FALSE,
+                     known_sd = FALSE) {
     smpl <- rnorm(n, mu, sigma)
     smpl_sd <- sd(smpl)
     smpl_mean <- mean(smpl)
     tailprob <- (1 - conf_level) / 2
-    q <- -qt(tailprob, df=(n - 1), lower.tail=TRUE)
-    se <- smpl_sd / sqrt(n)
+    if (use_normal) {
+      q <- - qnorm(tailprob, lower.tail=TRUE)
+    } else {
+      q <- - qt(tailprob, df=(n - 1), lower.tail=TRUE)
+    }
+    if (known_sd) {
+      se <- sigma / sqrt(n)
+    } else {
+      se <- smpl_sd / sqrt(n)
+    }
     data_frame(lb = smpl_mean - q * se,
                ub = smpl_mean + q * se,
                mean = smpl_mean,
@@ -20,10 +30,13 @@ draw_ci_ <- function(n, conf_level = 0.95, mu=0, sigma=1) {
                contains_mean = ((mu > lb) & (mu < ub)))
 }
 
-draw_ci <- function(nsamples, n, conf_level = 0.95, mu=0, sigma=1) {
+draw_ci <- function(nsamples, n, conf_level = 0.95, mu=0, sigma=1,
+                    use_normal = FALSE, known_sd = FALSE) {
    data_frame(i = seq_len(nsamples)) %>%
      group_by(i) %>%
-     do(draw_ci_(n, conf_level, mu, sigma)) %>%
+     do(draw_ci_(n, conf_level, mu, sigma,
+                 use_normal = use_normal,
+                 known_sd = known_sd)) %>%
      ungroup()
 }
 
@@ -32,7 +45,8 @@ shinyServer(function(input, output) {
       input$draw
       isolate({
         x <- draw_ci(input$samples, input$n, input$confidence / 100,
-                     input$mu, input$sigma)
+                     input$mu, input$sigma, use_normal = input$use_normal,
+                     known_sd = input$known_sd)
         if (input$sorted) {
           arrange(x, mean) %>% mutate(i = seq_along(mean))
         } else x

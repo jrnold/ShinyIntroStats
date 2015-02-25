@@ -15,7 +15,15 @@ shinyUI(
                       FALSE),
         numericInput("mu", "mean (\\(\\mu\\))", 0),
         numericInput("sigma", "standard deviation (\\(\\sigma\\))", 1,
-                     min = 0)
+                     min = 0),
+        checkboxInput("known_sd", "Use population \\(\\sigma\\)?", FALSE),
+        helpText("Use the population standard deviation \\(\\sigma\\) to ",
+                 "calculate the margin of error in the confidence intervals. ",
+                 "By default the sample standard deviations are used."),
+        checkboxInput("use_normal", "Use normal distribution?", FALSE),
+        helpText("Use the normal distribution \\(z\\)-scores to calculate the ",
+                 "margin of error in the confidence intervals. By default it ",
+                 "uses the Student's \\(t\\) distribution.")
       ),
 
       mainPanel(

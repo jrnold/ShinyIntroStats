@@ -73,15 +73,24 @@ shinyServer(function(input, output) {
        })
     })
 
-    output$eqn <- renderText({
+    output$eqn <- renderUI({
       input$draw
       isolate({
+        n <- input$n
+        conf_level <- input$confidence / 100
         tailprob <- (1 - conf_level) / 2
-        if (use_normal) {
-          q <- - qnorm(tailprob, lower.tail=TRUE)
+        if (input$use_normal) {
+          score <- - qnorm(tailprob, lower.tail=TRUE)
         } else {
-          q <- - qt(tailprob, df=(n - 1), lower.tail=TRUE)
+          score <- - qt(tailprob, df=(n - 1), lower.tail=TRUE)
         }
+        withMathJax(sprintf(paste0("Confidence Intervals calcualted as ",
+                                   "$$\\bar{x} \\pm %s \\frac{%s}{\\sqrt{%s}}$$"),
+                    round(score, 2),
+                    if (input$known_sd) round(input$sigma) else "s",
+                    input$n))
+        withMathJax(sprintf("Confidence Intervals calcualted as $$\\bar{x} \\pm %s \\cdot \\frac{%s}{\\sqrt{%s}}$$",
+                            round(score, 2), if (input$known_sd) input$sigma else "s", input$n))
       })
     })
 

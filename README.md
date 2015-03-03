@@ -14,12 +14,14 @@ install_github("jrnold/ShinyIntroStats")
 
 ## Usage
 
+This package is primarily a means to distribute Shiny apps. To run one of the included apps, 
+
 ```r
 library("ShinyIntroStats")
-shiny_intro_stats()
+intro_stats_shinyapp()
 ```
 
-Select the app that you would like to run and 
+Select the app that you would like to run and then Shiny will take care of the rest.
 
 ## Live Apps
 

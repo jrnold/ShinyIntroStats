@@ -1,5 +1,6 @@
 #' @import ggplot2
 #' @import dplyr
+#' @importFrom stringr str_c
 NULL
 
 # in data_frame calls. Should be replaced with standard evaluation.
@@ -413,3 +414,113 @@ students_t_area_plot_p <- function(p, df, mean = 0, scale = 1, ...) {
   students_t_area_plot_q(-q * scale + mean, q * scale + mean,
                          mean = mean, scale = scale, ...)
 }
+
+
+##################
+
+#' Plot probability ditribution
+#'
+#' @param dist Distribution name. Used for functions \code{pdist}, \code{ddist},
+#'   \code{qdist}.
+#' @param n Number of points to interpolate over
+#' @param xmin Minimum value on the x-axis scale
+#' @param xmax Maximum value on the x-axis scale
+#' @param area numeric vector of length 2. Minimum and maximum values of an area
+#'   under the curve to shade.
+#' @param p Probability area to shade.
+#' @param tails logical. Shade areas in the tails
+#' @param line_opts list. Arguments passed to \code{\link{geom_line}}.
+#' @param area_opts list. Arguments passed to \code{\link{geom_ribbon}}.
+#' @param ... Arguments passed to the distribution functions.
+#' @rdname plot_dist_density
+#' @export
+#' @examples
+#' plot_dist_density("norm", -4, 4, area = c(-2, 2))
+#' plot_dist_density("norm", -4, 4, area = c(-2, 2), tails = TRUE)
+#' plot_dist_density_p("norm", -4, 4, p = 0.95)
+#' plot_dist_density_p("norm", -4, 4, p = 0.95, tails = TRUE)
+plot_dist_density <- function(dist, xmin = NULL, xmax = NULL,
+                              area = NULL, tails = FALSE,
+                              line_opts = list(), area_opts = list(),
+                              n = 101, ...) {
+  qfun <- match.fun(str_c("q", dist))
+  pfun <- match.fun(str_c("p", dist))
+  dfun <- match.fun(str_c("d", dist))
+
+  if (is.null(xmin)) {
+    xmin <- qfun(0.005, ...)
+  }
+  if (is.null(xmax)) {
+    xmax <- qfun(0.995, ...)
+  }
+  line_data <- data_frame(x = seq(xmin, xmax, length.out = n))
+  line_data$y <- dfun(line_data$x, ...)
+
+  pp <- ggplot() +
+         do.call(geom_line,
+              c(list(data = line_data,
+                     mapping = aes_string(x = "x", y = "y")),
+                line_opts))
+
+  if (!is.null(area)) {
+    if (length(area) == 1) {
+      area <- c(-1, 1) * area
+    }
+    area <- sort(area[1:2])
+    if (! tails) {
+      area_min <- max(area[1], xmin)
+      area_max <- min(area[2], xmax)
+      area_data <- data_frame(x = seq(area_min, area_max, length.out = n),
+                              ymin = 0)
+      area_data$ymax <- dfun(area_data$x, ...)
+      pp <- pp + do.call(geom_ribbon,
+                         c(list(data = area_data,
+                                mapping = aes_string(x = "x", ymin = "ymin",
+                                                     ymax = "ymax")),
+                           area_opts))
+    } else {
+      area_min <- max(area[1], xmin)
+      area_max <- min(area[2], xmax)
+      if (area_min > xmin) {
+        area1_data <- data_frame(x = seq(xmin, area_min, length.out = n),
+                                ymin = 0)
+        area1_data$ymax <- dfun(area1_data$x, ...)
+        pp <- pp + do.call(geom_ribbon,
+                           c(list(data = area1_data,
+                                  mapping = aes_string(x = "x", ymin = "ymin",
+                                                       ymax = "ymax")),
+                             area_opts))
+      }
+      if (area_max < xmax) {
+        area2_data <- data_frame(x = seq(area_max, xmax, length.out = n),
+                                 ymin = 0)
+        area2_data$ymax <- dfun(area2_data$x, ...)
+        pp <- pp + do.call(geom_ribbon,
+                           c(list(data = area2_data,
+                                  mapping = aes_string(x = "x", ymin = "ymin",
+                                                       ymax = "ymax")),
+                             area_opts))
+      }
+
+    }
+  }
+  pp
+}
+
+
+#' @rdname plot_dist_density
+#' @export
+plot_dist_density_p <- function(dist, xmin = NULL, xmax = NULL,
+                                p = NULL, tails = FALSE,
+                                line_opts = list(),
+                                area_opts = list(), n = 101, ...) {
+  qfun <- match.fun(str_c("q", dist))
+  if (! is.null(p)) {
+    ptail <- (1 - p) / 2
+    area <- c(qfun(ptail, ...), qfun(ptail, ..., lower.tail = FALSE))
+  }
+  plot_dist_density(dist, xmin = xmin, xmax = xmax, area = area,
+                    line_opts = line_opts, area_opts = area_opts, n = n, ...)
+
+}
+

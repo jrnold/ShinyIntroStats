@@ -10,6 +10,7 @@ Depends:
 Imports:
     ggplot2,
     dplyr,
+    stringr,
     shiny
 Suggests:
     ggvis,

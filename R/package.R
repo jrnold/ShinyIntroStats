@@ -26,7 +26,7 @@ intro_stats_shinyapp <- function() {
                                    seq_along(.SHINY_APPS),
                                    .SHINY_APPS),
                            collapse = "\n"),
-                     "\n")
+                     "\n\n")
     choice <- readline(prompt)
     if (! choice %in% as.character(seq_along(.SHINY_APPS))) {
         choice <- readline(sprintf("Enter a number 1-%d:\n", length(.SHINY_APPS)))

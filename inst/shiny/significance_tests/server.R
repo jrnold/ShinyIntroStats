@@ -30,21 +30,6 @@ shinyServer(function(input, output) {
   })
 
   output$plot <- renderPlot({
-<<<<<<< HEAD
-    normal_tail_plot_q(z(),
-                       mean = 0,
-                       sd = 1,
-                       lower.tail = (input$direction == "lt"),
-                       two.sided = (input$direction == "neq"),
-                       area_opts = list(alpha = 0.5)) +
-      #       scale_x_continuous("",
-      #                          breaks = c(input$mu, input$xbar, -input$xbar),
-      #                          labels = c(expression(mu),
-      #                                     expression(bar(x)),
-      #                                     expression(-bar(x)))) +
-      scale_x_continuous("",
-                         breaks = unique(c(input$mu, z(), -z()))) +
-=======
     if (input$use_normal) {
       plt <- normal_tail_plot_q(z(),
                                 lower.tail = (input$direction == "lt"),
@@ -60,7 +45,6 @@ shinyServer(function(input, output) {
     plt +
       scale_x_continuous(expression((bar(x) - mu[0]) / (s / sqrt(n))),
                          breaks = unique(c(0, -z(), z()))) +
->>>>>>> eee8cc1f60e86056712a50df9d924543892f13c1
       theme_minimal()
   })
 

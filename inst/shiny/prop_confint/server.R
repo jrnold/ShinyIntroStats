@@ -1,21 +1,74 @@
-library("shiny")
 library("ggplot2")
-library("plyr")
+library("dplyr")
+
+rbernoulli <- function(n, p) sample(0:1, n, replace = TRUE,
+                                     prob = c(1 - p, p))
+
+##' Take sample from normal dist and calculate confidence interval for normal
+draw_ci_ <- function(n, p = 0.5, conf_level = 0.95, plus_four = FALSE) {
+    smpl <- rbernoulli(n, p)
+    if (plus_four) {
+      smpl_p <- mean(c(smpl, c(0, 0, 1, 1)))
+    } else {
+      smpl_p <- mean(smpl)
+    }
+    tailprob <- (1 - conf_level) / 2
+    q <- -qnorm(tailprob, lower.tail=TRUE)
+    se <- sqrt( smpl_p * (1 - smpl_p) / n)
+    data_frame(lb = pmax(smpl_p - q * se, 0),
+               ub = pmin(smpl_p + q * se, 1),
+               phat = smpl_p,
+               se = se,
+               n = n,
+               contains_p = ((p >= lb) & (p <= ub)))
+}
+
+draw_ci <- function(nsamples, n, p = 0.5, conf_level = 0.95,
+                    plus_four = FALSE) {
+   data_frame(i = seq_len(nsamples)) %>%
+     group_by(i) %>%
+     do(draw_ci_(n, p, conf_level, plus_four)) %>%
+     ungroup()
+}
 
 shinyServer(function(input, output) {
+    sample_ci <- reactive({
+      input$draw
+      isolate({
+        x <- draw_ci(input$samples,
+                     input$n,
+                     input$p,
+                     input$confidence / 100,
+                     input$plus_four)
+        if (input$sorted) {
+          arrange(x, phat) %>% mutate(i = seq_along(phat))
+        } else x
+      })
+    })
+
     output$plot <- renderPlot({
-       se1 <- sqrt(input$p1 * (1 - input$p1) / sqrt(input$n1))
-       z1 <- -qnorm((100 - input$conf1) / 200)
-       se2 <- sqrt(input$p1 * (1 - input$p2) / sqrt(input$n2))    
-       z2 <- -qnorm((100 - input$conf2) / 200)
+       input$draw
+       isolate({
+         (ggplot(sample_ci(), aes(x = i,
+                                  y = phat,
+                                  ymin = lb, ymax = ub,
+                                  colour = contains_p))
+          + geom_pointrange()
+          + geom_hline(yintercept = input$p, colour="blue")
+          + coord_flip()
+          + scale_x_continuous("")
+          + scale_y_continuous(sprintf("%d%% CI", input$confidence))
+          + scale_colour_manual(values = c("FALSE"="black", "TRUE"="gray"))
+          + theme_minimal()
+          + theme(legend.position = "none",
+                  axis.text.y = element_blank(),
+                  axis.ticks.y = element_blank())
+         )
+       })
+    })
 
-       df <- data.frame(i = factor(c(1, 2)),
-                        y = c(input$p1, input$p2),
-                        ymin = c(input$p1, input$p2) - c(z1, z2) * c(se1, se2),
-                        ymax = c(input$p1, input$p2) + c(z1, z2) * c(se1, se2))
-
-       print(ggplot(df, aes(x = i, y = y, ymin = ymin, ymax = ymax))
-             + geom_pointrange()
-             + scale_x_discrete(""))
+    output$npct <- renderText({
+        c("Percent of samples with confidence intervals containing the population proportion:",
+          round(mean(sample_ci()$contains_p) * 100, 2), "%")
     })
 })

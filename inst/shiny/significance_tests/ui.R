@@ -26,9 +26,8 @@ shinyUI(
         textOutput("z"),
         textOutput("pval"),
         plotOutput("plot"),
-        helpText("Shaded area is the probability of observing a sample mean more",
-                 "extreme than \\(\\bar x\\) under the alternative hypothesis",
-                 "\\(H_a\\).")
+        helpText("Shaded area is the probability of observing a test statistic more",
+                 "extreme than the sample test statistic, assuming the null hypothesis is true.")
       )
     )
   )

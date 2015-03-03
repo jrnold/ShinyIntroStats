@@ -3,14 +3,17 @@ Title: ShinyApps for Intro Stats
 Description: Some Shiny apps that are useful when teaching
  introductory statistics.
 Version: 1.0.0
-Authors: "Jeffrey B. Arnold <jeffrey.arnold@gmail.com> [cre, aut]"
+Authors@R: person("Jeffrey B.", "Arnold", email = "jeffrey.arnold@gmail.com",
+                  role = c("cre", "aut"))
 Depends:
     R (>= 3.1.2)
 Imports:
     ggplot2,
-    plyr,
+    dplyr,
+    stringr,
     shiny
 Suggests:
-    ggvis
+    ggvis,
+    plyr
 License: GPL-3
 LazyData: true

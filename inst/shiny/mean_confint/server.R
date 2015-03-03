@@ -1,23 +1,101 @@
-library("shiny")
 library("ggplot2")
-library("plyr")
+library("dplyr")
+
+norm_mean <- 0
+norm_sd <- 1
+
+##' Take sample from normal dist and calculate confidence interval for normal
+draw_ci_ <- function(n, conf_level = 0.95, mu=0, sigma=1,
+                     use_normal = FALSE,
+                     known_sd = FALSE) {
+    smpl <- rnorm(n, mu, sigma)
+    smpl_sd <- sd(smpl)
+    smpl_mean <- mean(smpl)
+    tailprob <- (1 - conf_level) / 2
+    if (use_normal) {
+      q <- - qnorm(tailprob, lower.tail=TRUE)
+    } else {
+      q <- - qt(tailprob, df=(n - 1), lower.tail=TRUE)
+    }
+    if (known_sd) {
+      se <- sigma / sqrt(n)
+    } else {
+      se <- smpl_sd / sqrt(n)
+    }
+    data_frame(lb = smpl_mean - q * se,
+               ub = smpl_mean + q * se,
+               mean = smpl_mean,
+               se = se,
+               n = n,
+               contains_mean = ((mu > lb) & (mu < ub)))
+}
+
+draw_ci <- function(nsamples, n, conf_level = 0.95, mu=0, sigma=1,
+                    use_normal = FALSE, known_sd = FALSE) {
+   data_frame(i = seq_len(nsamples)) %>%
+     group_by(i) %>%
+     do(draw_ci_(n, conf_level, mu, sigma,
+                 use_normal = use_normal,
+                 known_sd = known_sd)) %>%
+     ungroup()
+}
 
 shinyServer(function(input, output) {
-    output$plot <- renderPlot({
-        df1 <- input$n1 - 1
-        df2 <- input$n2 - 1
-        t1 <- -qt((100 - input$conf1) / 200, df = df1)
-        t2 <- -qt((100 - input$conf2) / 200, df = df2)
-        se1 <- input$s1 / sqrt(input$n1)
-        se2 <- input$s2 / sqrt(input$n2)
-                               
-        df <- data.frame(i = factor(c(1, 2)),
-                         y = c(input$xbar1, input$xbar2),
-                         ymin = c(input$xbar1, input$xbar2) - c(t1, t2) * c(se1, se2),
-                         ymax = c(input$xbar1, input$xbar2) + c(t1, t2) * c(se1, se2))
+    sample_ci <- reactive({
+      input$draw
+      isolate({
+        x <- draw_ci(input$samples, input$n, input$confidence / 100,
+                     input$mu, input$sigma, use_normal = input$use_normal,
+                     known_sd = input$known_sd)
+        if (input$sorted) {
+          arrange(x, mean) %>% mutate(i = seq_along(mean))
+        } else x
+      })
+    })
 
-       print(ggplot(df, aes(x = i, y = y, ymin = ymin, ymax = ymax))
-             + geom_pointrange()
-             + scale_x_discrete(""))
+    output$plot <- renderPlot({
+       input$draw
+       isolate({
+         (ggplot(sample_ci(), aes(x = i,
+                                  ymin = lb, ymax = ub,
+                                  colour = contains_mean))
+          + geom_linerange()
+          + geom_hline(xintercept = input$mu, colour="blue")
+          + coord_flip()
+          + scale_x_continuous("")
+          + scale_y_continuous(sprintf("%d%% CI", input$confidence))
+          + scale_colour_manual(values = c("FALSE"="black", "TRUE"="gray"))
+          + theme_minimal()
+          + theme(legend.position = "none",
+                  axis.text.y = element_blank(),
+                  axis.ticks.y = element_blank())
+         )
+       })
+    })
+
+    output$eqn <- renderUI({
+      input$draw
+      isolate({
+        n <- input$n
+        conf_level <- input$confidence / 100
+        tailprob <- (1 - conf_level) / 2
+        if (input$use_normal) {
+          score <- - qnorm(tailprob, lower.tail=TRUE)
+        } else {
+          score <- - qt(tailprob, df=(n - 1), lower.tail=TRUE)
+        }
+        withMathJax(sprintf(paste0("Confidence Intervals calcualted as ",
+                                   "$$\\bar{x} \\pm %s \\frac{%s}{\\sqrt{%s}}$$"),
+                    round(score, 2),
+                    if (input$known_sd) round(input$sigma) else "s",
+                    input$n))
+        withMathJax(sprintf("Confidence Intervals calcualted as $$\\bar{x} \\pm %s \\cdot \\frac{%s}{\\sqrt{%s}}$$",
+                            round(score, 2), if (input$known_sd) input$sigma else "s", input$n))
+      })
+    })
+
+    output$npct <- renderText({
+        c("Percent of samples with confidence intervals containing the population mean:",
+          round(mean(sample_ci()$contains_mean) * 100, 2), "%")
     })
 })

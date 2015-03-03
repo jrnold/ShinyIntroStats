@@ -1,6 +1,6 @@
 library("stringr")
 library("ggplot2")
-source("utils.R")
+library("ShinyIntroStats")
 
 shinyServer(function(input, output) {
   se <- reactive((input$sigma / sqrt(input$n)))

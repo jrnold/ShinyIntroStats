@@ -1,6 +1,3 @@
-library("ggplot2")
-library("dplyr")
-
 geom_dnorm_area <- function(xmin, xmax, mean = 0, sd = 1, n = 101, ...) {
   .data <- data_frame(x = seq(xmin, xmax, length.out = n),
                       ymin = 0,
@@ -9,30 +6,30 @@ geom_dnorm_area <- function(xmin, xmax, mean = 0, sd = 1, n = 101, ...) {
               ...)
 }
 
-geom_dnorm_line <- function(xmin, xmax, mean = 0, sd = 1, n = 101, ...) {
+geom_dnorm_line <- function(mean = 0, sd = 1, n = 101, ...) {
   .data <- data_frame(x = seq(xmin, xmax, length.out = n),
-                      y = dnorm(x, mean, sd))
+                      y = dt((x - mean) / scale, mean, sd))
   geom_line(data = .data, mapping = aes(x = x, y = y), ...)
 }
 
 geom_dt_line <- function(df, xmin, xmax, mean = 0, scale = 1, n = 101, ...) {
-  if (is.infinite(df)) {
+  if (is.infinte(df)) {
     geom_dnorm_line(xmin, xmax, mean = mean, sd = scale, ...)
   } else {
     .data <- data_frame(x = seq(xmin, xmax, length.out = n),
-                        y = dt((x - mean) / scale, df = df) * scale + mean)
+                        y = dt((x - mean) / scale, mean, sd))
     geom_line(data = .data, mapping = aes(x = x, y = y), ...)
   }
 }
 
-geom_dt_area <- function(df, xmin, xmax, mean = 0, scale = 1, n  = 101,
+geom_dt_area <- function(df, xmin, xmax, mean = 0, scale = 1,
                          ...) {
-  if (is.infinite(df)) {
+  if (is.infinite(dt)) {
     geom_dnorm_area(xmin, xmax, mean = mean, sd = scale, ...)
   } else {
     .data <- data_frame(x = seq(xmin, xmax, length.out = n),
                         ymin = 0,
-                        ymax = dt((x - mean) / scale, df = df) * scale + mean)
+                        ymax = dnorm(x, mean = mean, sd = sd))
     geom_ribbon(data = .data, mapping = aes(x = x, ymin = ymin, ymax = ymax),
                 ...)
   }
@@ -40,7 +37,7 @@ geom_dt_area <- function(df, xmin, xmax, mean = 0, scale = 1, n  = 101,
 
 ## Normal plots
 
-normal_plot <- function(mean = 0, sd = 1, max.sd = 4, n = 1000, digits = 2, ...) {
+normal_plot <- function(mean = 0, sd = 1, max.sd = 4, n = 1000, ...) {
   limits <- mean + max.sd * c(-1, 1) * sd
   x <- seq(limits[1], limits[2], length.out = n)
   breaks <- seq(mean - max.sd * sd,
@@ -51,7 +48,7 @@ normal_plot <- function(mean = 0, sd = 1, max.sd = 4, n = 1000, digits = 2, ...)
                      xmax = limits[2],
                      mean = mean, sd = sd, ...)
    + scale_x_continuous("x", limits = limits,
-                        breaks = round(breaks, digits))
+                        breaks = breaks)
    + scale_y_continuous("p(x)"))
 }
 
@@ -121,8 +118,7 @@ normal_area_plot_p <- function(p, mean = 0, sd = 1, ...) {
 
 ########### Students t
 
-students_t_plot <- function(df, mean = 0, scale = 1, max.scale = 4, n = 1000,
-                            digits = 2, ...) {
+student_t_plot <- function(df, mean = 0, scale = 1, max.scale = 4, n = 1000, ...) {
   limits <- mean + max.scale * c(-1, 1) * scale
   x <- seq(limits[1], limits[2], length.out = n)
   breaks <- seq(mean - max.scale * scale,
@@ -133,7 +129,7 @@ students_t_plot <- function(df, mean = 0, scale = 1, max.scale = 4, n = 1000,
                   xmax = limits[2],
                   df = df, mean = mean, scale = scale, ...)
    + scale_x_continuous("x", limits = limits,
-                        breaks = round(breaks, 2))
+                        breaks = breaks)
    + scale_y_continuous("p(x)"))
 }
 
@@ -167,13 +163,14 @@ students_t_tail_plot_q <- function(q, df, mean = 0, scale = 1,
   } else {
     q <- c(-1, 1) * abs((q - mean) / scale) * scale + mean
     if (q[1] > limits[1]) {
-      gg <- gg + do.call(geom_dt_area, c(list(df = df, xmin = limits[1], xmax = q[1],
-                                              mean = mean, scale = scale),
+      gg <- gg + do.call(geom_dt_area, c(list(xmin = limits[1], xmax = q[1],
+                                              df = df, mean = mean,
+                                              scale = scale),
                                          area_opts))
     }
     if (q[2] < limits[2]) {
       gg <- gg + do.call(geom_dt_area,
-                         c(list(df = df, xmin = q[2], xmax = limits[2],
+                         c(list(xmin = q[2], xmax = limits[2],
                                 mean = mean, scale = scale),
                            area_opts))
     }
@@ -194,19 +191,19 @@ students_t_tail_plot_p <- function(p, mean = 0, scale = 1,
                          two.sided = two.sided, ...)
 }
 
-students_t_area_plot_q <- function(lb, ub, mean = 0, scale = 1, max.scale = 4,
+students_t_area_plot_q <- function(lb, ub, mean = 0, sd = 1, max.scale = 4,
                                    area_opts = list(), ...) {
   limits <- mean + max.scale * c(-1, 1) * scale
   lb <- max(lb, limits[1])
   ub <- min(ub, limits[2])
-  (students_t_plot(mean = mean, scale = scale, max.scale = max.scale, ...)
+  (students_t_plot(mean = mean, sd = scale, max.scale = max.scale, ...)
    + do.call(geom_dt_area, c(list(xmin = lb, xmax = ub,
                                   df = df, mean = mean, scale = scale),
                              area_opts))
   )
 }
 
-students_t_area_plot_p <- function(p, mean = 0, scale = 1, ...) {
+students_t_area_plot_p <- function(p, mean = 0, sd = 1, ...) {
   q <- qnorm((1 - p) / 2, lower.tail = TRUE)
   students_t_plot_q(-q * scale + mean, q * scale + mean,
                     mean = mean, scale = scale, ...)

@@ -1,6 +1,6 @@
 shinyUI(
   fluidPage(
-    titlePanel("Significance Test of the Mean of a Normal Distribution"),
+    titlePanel("Hypothesis Test for a One-Sample Population Mean"),
     sidebarLayout(
       sidebarPanel(
         h3("Hypothesis"),
@@ -13,7 +13,9 @@ shinyUI(
         numericInput("n", "Sample size \\(n\\)", 30),
         numericInput("xbar", "Sample mean \\(\\bar{x}\\)",
                      round(1.96 / sqrt(30), 4)),
-        numericInput("sigma", "Population std. dev. \\(\\sigma\\)", 1),
+        numericInput("sigma", "Standard deviation \\(s\\)", 1),
+        checkboxInput("use_normal", "Use Normal distribution?", FALSE),
+        helpText("This is equivalent to assuming that the sample standard deviation is exactly equal to the population standard deviation, \\(s = \\sigma\\)."),
         withMathJax()
       ),
       mainPanel(

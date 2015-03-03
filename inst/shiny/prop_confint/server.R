@@ -15,12 +15,12 @@ draw_ci_ <- function(n, p = 0.5, conf_level = 0.95, plus_four = FALSE) {
     tailprob <- (1 - conf_level) / 2
     q <- -qnorm(tailprob, lower.tail=TRUE)
     se <- sqrt( smpl_p * (1 - smpl_p) / n)
-    data_frame(lb = smpl_p - q * se,
-               ub = smpl_p + q * se,
+    data_frame(lb = pmax(smpl_p - q * se, 0),
+               ub = pmin(smpl_p + q * se, 1),
                phat = smpl_p,
                se = se,
                n = n,
-               contains_p = ((p > lb) & (p < ub)))
+               contains_p = ((p >= lb) & (p <= ub)))
 }
 
 draw_ci <- function(nsamples, n, p = 0.5, conf_level = 0.95,
@@ -50,9 +50,10 @@ shinyServer(function(input, output) {
        input$draw
        isolate({
          (ggplot(sample_ci(), aes(x = i,
+                                  y = phat,
                                   ymin = lb, ymax = ub,
                                   colour = contains_p))
-          + geom_linerange()
+          + geom_pointrange()
           + geom_hline(yintercept = input$p, colour="blue")
           + coord_flip()
           + scale_x_continuous("")

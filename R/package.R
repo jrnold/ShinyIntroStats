@@ -5,13 +5,10 @@
 #' @import shiny
 NULL
 
-.shiny_apps <-
-    c(clt = "Central Limit Theorem",
-      tdist = "t-distribution",
-      confint = "Confidence interval coverage",
-      mean_confint = "Confidence intervals (mean)",
-      prop_confint = "Confidence intervals (proportion)"
-      )
+.SHINY_APPS <-
+  basename(Filter(function(x) file_test("-d", x),
+           dir(system.file("shiny", package = "ShinyIntroStats"),
+               full.names = TRUE)))
 
 run_shiny_app <- function(name, ...) {
   shiny::runApp(system.file(file.path("shiny", name),
@@ -26,14 +23,14 @@ run_shiny_app <- function(name, ...) {
 intro_stats_shinyapp <- function() {
     prompt <- paste0("Enter the number of the app to run:\n",
                      paste(sprintf("%d. %s",
-                                   seq_along(.shiny_apps),
-                                   .shiny_apps),
+                                   seq_along(.SHINY_APPS),
+                                   .SHINY_APPS),
                            collapse = "\n"),
                      "\n")
     choice <- readline(prompt)
-    if (! choice %in% as.character(seq_along(.shiny_apps))) {
-        choice <- readline(sprintf("Enter a number 1-%d:\n", length(.shiny_apps)))
+    if (! choice %in% as.character(seq_along(.SHINY_APPS))) {
+        choice <- readline(sprintf("Enter a number 1-%d:\n", length(.SHINY_APPS)))
     } else {
-        run_shiny_app(names(.shiny_apps)[as.integer(choice)])
+        run_shiny_app(.SHINY_APPS[as.integer(choice)])
     }
 }

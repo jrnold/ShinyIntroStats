@@ -3,6 +3,7 @@
 #' @name ShinyIntroStats
 #' @docType package
 #' @import shiny
+#' @import yaml
 NULL
 
 .SHINY_APPS <-

@@ -1,5 +1,5 @@
 library("shiny")
-source("utils.R")
+library("ShinyIntroStats")
 
 shinyServer(function(input, output) {
   limits <- c(-4, 4)

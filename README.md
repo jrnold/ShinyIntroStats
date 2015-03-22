@@ -1,6 +1,6 @@
 # ShinyIntroStats
 
-Some [Shiny](http://shiny.rstudio.com/) apps appropriate for intro stats courses.
+Some [Shiny](http://shiny.rstudio.com/) apps appropriate for introductory statistics courses.
 
 ## Install
 

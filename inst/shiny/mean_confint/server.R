@@ -9,7 +9,6 @@ draw_ci_ <- function(n, conf_level = 0.95, mu=0, sigma=1,
                      use_normal = FALSE,
                      known_sd = FALSE) {
     smpl <- rnorm(n, mean = mu, sd = sigma)
-    print(summary(smpl))
     smpl_sd <- sd(smpl)
     smpl_mean <- mean(smpl)
     tailprob <- (1 - conf_level) / 2
@@ -27,7 +26,9 @@ draw_ci_ <- function(n, conf_level = 0.95, mu=0, sigma=1,
                ub = smpl_mean + q * se,
                mean = smpl_mean,
                se = se,
+               mu = mu,
                n = n,
+               sigma = sigma,
                contains_mean = ((mu > lb) & (mu < ub)))
 }
 
@@ -60,16 +61,22 @@ shinyServer(function(input, output) {
 
     output$plot <- renderPlot({
        input$draw
-
        isolate({
-         (ggplot(sample_ci(), aes(x = i,
-                                  ymin = lb, ymax = ub,
-                                  colour = contains_mean))
+         ylimits <- c(input$mu - 5 * input$sigma / sqrt(input$n),
+                      input$mu + 5 * input$sigma / sqrt(input$n))
+         .data <-
+           mutate(sample_ci(),
+                  lb = pmax(lb, ylimits[1]),
+                  ub = pmin(ub, ylimits[2]))
+         (ggplot(.data, aes(x = i,
+                           ymin = lb, ymax = ub,
+                           colour = contains_mean))
           + geom_linerange()
           + geom_hline(yintercept = mu(), colour="blue")
           + coord_flip()
           + scale_x_continuous("")
-          + scale_y_continuous(sprintf("%d%% CI", input$confidence))
+          + scale_y_continuous(sprintf("%d%% CI", input$confidence),
+                               limits = ylimits)
           + scale_colour_manual(values = c("FALSE"="black", "TRUE"="gray"))
           + theme_minimal()
           + theme(legend.position = "none",
@@ -85,18 +92,19 @@ shinyServer(function(input, output) {
         n <- input$n
         conf_level <- input$confidence / 100
         tailprob <- (1 - conf_level) / 2
-        if (input$use_normal) {
+        if (input$use_normal | input$known_sd) {
           score <- - qnorm(tailprob, lower.tail=TRUE)
         } else {
           score <- - qt(tailprob, df=(n - 1), lower.tail=TRUE)
         }
-        withMathJax(sprintf(paste0("Confidence Intervals calcualted as ",
-                                   "$$\\bar{x} \\pm %s \\frac{%s}{\\sqrt{%s}}$$"),
+        withMathJax(sprintf(paste0("The confidence intervals are calculated as ",
+                                   "$$\\bar{x} \\pm %s_{\\alpha/2} \\frac{%s}{\\sqrt{n}}",
+                                   "= \\bar{x} \\pm %s \\frac{%s}{\\sqrt{%s}}$$"),
+                    if (input$known_sd | input$use_normal) "z" else "t",
+                    if (input$known_sd) "\\sigma" else "s",
                     round(score, 2),
                     if (input$known_sd) round(input$sigma) else "s",
                     input$n))
-        withMathJax(sprintf("Confidence Intervals calcualted as $$\\bar{x} \\pm %s \\cdot \\frac{%s}{\\sqrt{%s}}$$",
-                            round(score, 2), if (input$known_sd) input$sigma else "s", input$n))
       })
     })
 
